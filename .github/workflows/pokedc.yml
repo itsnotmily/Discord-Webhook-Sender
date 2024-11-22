@@ -14,26 +14,18 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Debug Directory Structure (Optional)
-    - name: Debug Directory Structure
-      run: ls -R
-
-    # Step 3: Navigate to the correct directory (if package.json is in a subdirectory)
-    - name: Navigate to project directory
-      run: cd Discord-Webhook-Sender/pokemon # Adjust to the directory containing package.json
-
-    # Step 4: Set up Node.js
+    # Step 2: Set up Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
 
-    # Step 5: Install dependencies
-    - name: Install dependencies
-      run: npm install
+    # Step 3: Install axios (no package.json)
+    - name: Install axios
+      run: npm install axios
 
-    # Step 6: Run the script
+    # Step 4: Run the script
     - name: Run Pokémon Notification Script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      run: node pokemon-discord.js
+      run: node pokemon/poke.js
