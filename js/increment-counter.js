@@ -1,30 +1,28 @@
-const fs = require('fs');
-const path = require('path');
+const axios = require('axios');
 
-// Path to the last_watched.json file
-const filePath = path.resolve(__dirname, '../last_watched.json');
+const PLEX_SERVER_URL = "http://<YOUR_SERVER_URL>:32400"; // Replace with your server URL
+const PLEX_TOKEN = "<YOUR_PLEX_TOKEN>"; // Replace with your token
 
-// Read and parse the JSON file
-let data;
-try {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    data = JSON.parse(fileContent);
-} catch (error) {
-    console.error('Error reading or parsing last_watched.json:', error);
-    process.exit(1);
+async function getLatestWatched() {
+  try {
+    const response = await axios.get(`${PLEX_SERVER_URL}/status/sessions/history/all`, {
+      params: { 'X-Plex-Token': PLEX_TOKEN }
+    });
+
+    const history = response.data.MediaContainer.Metadata;
+
+    if (history && history.length > 0) {
+      // Sort by view date (descending)
+      history.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
+
+      const latest = history[0];
+      console.log(`Latest Watched: ${latest.title}`);
+    } else {
+      console.log('No watch history found.');
+    }
+  } catch (error) {
+    console.error('Error fetching watch history:', error.message);
+  }
 }
 
-// Ensure the JSON has a 'count' key and increment it
-if (typeof data.count !== 'number') {
-    data.count = 0; // Initialize count if it doesn't exist
-}
-data.count += 1;
-
-// Write the updated JSON back to the file
-try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-    console.log('Successfully incremented count to:', data.count);
-} catch (error) {
-    console.error('Error writing to last_watched.json:', error);
-    process.exit(1);
-}
+getLatestWatched();
