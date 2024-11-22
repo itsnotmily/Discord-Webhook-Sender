@@ -2,8 +2,8 @@ name: Pokémon Discord Notification
 
 on:
   schedule:
-    - cron: '0 9 * * *'
-  workflow_dispatch:
+    - cron: '0 9 * * *' # Runs daily at 9 AM UTC
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   send-pokemon-notification:
@@ -14,21 +14,25 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Step 2: Navigate to the correct directory
-    - name: Navigate to project directory
-      working-directory: Discord-Webhook-Sender/pokemon # Change this to your package.json directory
+    # Step 2: Debug Directory Structure (Optional)
+    - name: Debug Directory Structure
+      run: ls -R
 
-    # Step 3: Set up Node.js
+    # Step 3: Navigate to the correct directory (if package.json is in a subdirectory)
+    - name: Navigate to project directory
+      run: cd Discord-Webhook-Sender/pokemon # Adjust to the directory containing package.json
+
+    # Step 4: Set up Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
 
-    # Step 4: Install dependencies
+    # Step 5: Install dependencies
     - name: Install dependencies
       run: npm install
 
-    # Step 5: Run the script
+    # Step 6: Run the script
     - name: Run Pokémon Notification Script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
