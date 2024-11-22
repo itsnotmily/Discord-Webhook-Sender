@@ -28,12 +28,17 @@ jobs:
           PLEX_SERVER_URL: ${{ secrets.PLEX_SERVER_URL }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-      - name: Commit changes to last_watched.json
+      - name: Check for changes and commit to last_watched.json
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add last_watched.json  # Only add the specific file you want to commit
-          git commit -m "Update last watched item"
-          git push
+          git diff --exit-code  # Checks if there are any changes to commit
+          if [ $? -eq 1 ]; then
+            git add last_watched.json  # Only add if there are changes
+            git commit -m "Update last watched item"
+            git push
+          else
+            echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for commit permissions
