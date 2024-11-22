@@ -1,39 +1,42 @@
-name: Plex Watch Check
+name: Increment Counter
 
 on:
-  workflow_dispatch:  # Manual trigger for the workflow
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
-  check-plex-watch:
+  increment-counter:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Check out the repository
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '14'
 
-      - name: Install dependencies
-        run: npm install fs  # Install 'fs' for file system operations
+      # Step 3: Run Increment Counter Script
+      - name: Increment Counter
+        run: |
+          node -e "
+          const fs = require('fs');
+          const filePath = './last_watched.json';
+          const data = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : { count: 0 };
+          data.count = (data.count || 0) + 1;
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+          console.log('Updated count to:', data.count);
+          "
 
-      - name: Run Increment Counter Script
-        run: node js/increment-counter.js
-
-- name: Check for changes and commit to last_watched.json
-  run: |
-    git config --global user.name "github-actions"
-    git config --global user.email "github-actions@github.com"
-    if ! git diff --quiet; then  # Check if there are changes
-      git add last_watched.json
-      git commit -m "Increment last watched counter"
-      git push
-    else
-      echo "No changes to commit"
-    fi
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for commit permissions
+      # Step 4: Commit and push changes if there are any
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add last_watched.json
+          git commit -m "Increment counter"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
