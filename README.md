@@ -40,7 +40,7 @@
    ```bash
    cd pokemon
 
-3. **Set Your Webhook URL:
+3. **Set Your Webhook URL:**
    ```bash
    DISCORD_WEBHOOK_URL=YOUR_DISCORD_WEBHOOK_URL
 
@@ -48,7 +48,8 @@
     ```bash
     npm install axios
 5. **Run the Script:**
-   ```node pokemon.js
+   ```bash
+   node pokemon.js
    
 ## Automation via GitHub Actions
 
