@@ -3,26 +3,52 @@ const fs = require('fs');
 const path = require('path');
 
 const PLEX_TOKEN = process.env.PLEX_TOKEN;
-const PLEX_SERVER_URL = process.env.PLEX_SERVER_URL;
+const PLEX_SERVER_URL = process.env.PLEX_SERVER_URL;  // Example: 'http://localhost:32400'
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const LAST_WATCHED_FILE = path.join(__dirname, '../last_watched.json');  // Path to last_watched.json
 
-async function getRecentWatched() {
+// Replace <section_id> with the appropriate IDs for your library sections (Movies and TV Shows)
+const MOVIE_SECTION_ID = '1';  // Usually '1' is Movies, but verify your library section ID
+const TV_SECTION_ID = '2';  // Usually '2' is TV Shows, but verify your library section ID
+
+// Fetch history for Movies and TV Shows
+async function getLastWatched() {
   try {
-    console.log('Fetching recent watched items from Plex API...');
-    const response = await axios.get(`${PLEX_SERVER_URL}/status/sessions`, {
+    console.log('Fetching watch history from Plex...');
+    
+    // Fetch Movies
+    const movieResponse = await axios.get(`${PLEX_SERVER_URL}/library/sections/${MOVIE_SECTION_ID}/all`, {
       headers: {
         'X-Plex-Token': PLEX_TOKEN,
       },
+      params: {
+        type: 1,  // 1 is for Movies
+        sort: 'addedAt:desc', // Sort by most recently added or watched
+      },
     });
 
-    console.log('Plex API Response:', response.data);  // Debug log for API response
+    // Fetch TV Shows
+    const tvResponse = await axios.get(`${PLEX_SERVER_URL}/library/sections/${TV_SECTION_ID}/all`, {
+      headers: {
+        'X-Plex-Token': PLEX_TOKEN,
+      },
+      params: {
+        type: 2,  // 2 is for TV shows
+        sort: 'addedAt:desc', // Sort by most recently added or watched
+      },
+    });
 
-    const sessions = response.data.MediaContainer.Video;
-    if (sessions && sessions.length > 0) {
-      return sessions[0]; // Assuming the most recent watched item is first
+    // Combine both responses
+    const movies = movieResponse.data.MediaContainer.Movie || [];
+    const tvShows = tvResponse.data.MediaContainer.TVShow || [];
+
+    const combined = [...movies, ...tvShows];  // Combine the movies and TV shows
+    if (combined.length > 0) {
+      // Sort by the most recently watched item
+      combined.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt)); // Sort by added date
+      return combined[0];  // Return the most recent watched item
     } else {
-      console.log('No recent watched items found.');
+      console.log('No movies or TV shows found in history.');
       return null;
     }
   } catch (error) {
@@ -31,8 +57,9 @@ async function getRecentWatched() {
   }
 }
 
+// Update last watched
 async function updateLastWatched() {
-  const lastWatched = await getRecentWatched();
+  const lastWatched = await getLastWatched();
   if (!lastWatched) {
     console.log('No recent watch data found.');
     return;
@@ -51,7 +78,7 @@ async function updateLastWatched() {
   if (!currentData.title || currentData.title !== lastWatched.title) {
     currentData = {
       title: lastWatched.title,
-      type: lastWatched.type,
+      type: lastWatched.type === 1 ? 'movie' : 'tv_show',
       ratingKey: lastWatched.ratingKey,
       lastUpdated: new Date().toISOString(),
     };
@@ -67,6 +94,7 @@ async function updateLastWatched() {
   }
 }
 
+// Send a Discord notification
 async function sendDiscordNotification(data) {
   const message = {
     content: `New item watched: ${data.title} (${data.type})`,
@@ -80,4 +108,5 @@ async function sendDiscordNotification(data) {
   }
 }
 
+// Call the update function
 updateLastWatched();
