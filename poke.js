@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Your Discord webhook URL
-const DISCORD_WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+const DISCORD_WEBHOOK_URL = 'DISCORD_WEBHOOK_URL';
 
 // Function to get a random Pokémon from PokeAPI
 async function getRandomPokemon() {
