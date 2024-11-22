@@ -1,38 +1,34 @@
-const axios = require('axios');
+name: Pokémon Discord Notification
 
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+on:
+  # Schedule the action to run daily at 9:00 AM UTC
+  schedule:
+    - cron: '0 9 * * *'
 
-if (!DISCORD_WEBHOOK_URL) {
-  console.error('DISCORD_WEBHOOK_URL is not set. Add it as an environment variable.');
-  process.exit(1);
-}
+  # Allow manual triggering via the GitHub Actions UI
+  workflow_dispatch:
 
-async function getRandomPokemon() {
-  const randomId = Math.floor(Math.random() * 1000) + 1;
+jobs:
+  send-pokemon-notification:
+    runs-on: ubuntu-latest
 
-  try {
-    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${randomId}`);
-    const pokemon = response.data;
-    const pokemonName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
-    const officialArtworkUrl = pokemon.sprites.other['official-artwork'].front_default;
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    const discordPayload = {
-      content: `🎨 Today's Pokémon is **${pokemonName}**!`,
-      embeds: [
-        {
-          title: `Meet ${pokemonName}!`,
-          description: `Check out the official artwork for ${pokemonName}.`,
-          image: { url: officialArtworkUrl },
-          color: 0x1e90ff,
-        },
-      ],
-    };
+    # Step 2: Set up Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
 
-    await axios.post(DISCORD_WEBHOOK_URL, discordPayload);
-    console.log(`Notification sent for ${pokemonName}!`);
-  } catch (error) {
-    console.error('Error fetching Pokémon or sending webhook:', error.message);
-  }
-}
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
 
-getRandomPokemon();
+    # Step 4: Run the script
+    - name: Run Pokémon Notification Script
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: node pokemon-discord.js
