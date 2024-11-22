@@ -28,4 +28,4 @@ jobs:
     - name: Run Pokémon Notification Script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      run: node pokemon/poke.js
+      run: node pokemon/pokemon.js
