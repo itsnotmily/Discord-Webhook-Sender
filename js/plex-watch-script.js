@@ -9,15 +9,21 @@ const LAST_WATCHED_FILE = path.join(__dirname, '../last_watched.json');  // Path
 
 async function getRecentWatched() {
   try {
+    console.log('Fetching recent watched items from Plex API...');
     const response = await axios.get(`${PLEX_SERVER_URL}/status/sessions`, {
       headers: {
         'X-Plex-Token': PLEX_TOKEN,
       },
     });
 
+    console.log('Plex API Response:', response.data);  // Debug log for API response
+
     const sessions = response.data.MediaContainer.Video;
     if (sessions && sessions.length > 0) {
       return sessions[0]; // Assuming the most recent watched item is first
+    } else {
+      console.log('No recent watched items found.');
+      return null;
     }
   } catch (error) {
     console.error('Error fetching data from Plex:', error);
@@ -36,6 +42,9 @@ async function updateLastWatched() {
   let currentData = {};
   if (fs.existsSync(LAST_WATCHED_FILE)) {
     currentData = JSON.parse(fs.readFileSync(LAST_WATCHED_FILE, 'utf-8'));
+    console.log('Current last watched data:', currentData);  // Debug log for current data
+  } else {
+    console.log('last_watched.json does not exist, creating new file...');
   }
 
   // If the last watched item is different, update the file
@@ -47,8 +56,9 @@ async function updateLastWatched() {
       lastUpdated: new Date().toISOString(),
     };
 
+    console.log('Writing new data to last_watched.json:', currentData);  // Debug log for new data
+
     fs.writeFileSync(LAST_WATCHED_FILE, JSON.stringify(currentData, null, 2));  // Update the file with the new data
-    console.log('Updated last_watched.json:', currentData);
 
     // Send a Discord notification
     await sendDiscordNotification(currentData);
