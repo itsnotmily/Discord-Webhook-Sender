@@ -1,55 +1,73 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
-// Retrieve secrets from environment variables
-const plexToken = process.env.PLEX_TOKEN;  // Access the PLEX_TOKEN secret
-const plexServerUrl = process.env.PLEX_SERVER_URL;  // Access the PLEX_SERVER_URL secret
-const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;  // Access the DISCORD_WEBHOOK_URL secret
+const PLEX_TOKEN = process.env.PLEX_TOKEN;
+const PLEX_SERVER_URL = process.env.PLEX_SERVER_URL;
+const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
+const LAST_WATCHED_FILE = path.join(__dirname, '../last_watched.json');  // Path to last_watched.json
 
-// Fetch recently watched items from the Plex API
 async function getRecentWatched() {
   try {
-    const response = await axios.get(`${plexServerUrl}/status/sessions`, {
+    const response = await axios.get(`${PLEX_SERVER_URL}/status/sessions`, {
       headers: {
-        'X-Plex-Token': plexToken
-      }
+        'X-Plex-Token': PLEX_TOKEN,
+      },
     });
 
-    return response.data.MediaContainer.Video || [];
+    const sessions = response.data.MediaContainer.Video;
+    if (sessions && sessions.length > 0) {
+      return sessions[0]; // Assuming the most recent watched item is first
+    }
   } catch (error) {
     console.error('Error fetching data from Plex:', error);
-    return [];
+    return null;
   }
 }
 
-// Send a notification to Discord
-async function sendDiscordNotification(content) {
-  try {
-    const message = {
-      content: `🎬 New watched item on Plex: ${content}`
+async function updateLastWatched() {
+  const lastWatched = await getRecentWatched();
+  if (!lastWatched) {
+    console.log('No recent watch data found.');
+    return;
+  }
+
+  // Read the current last watched from file
+  let currentData = {};
+  if (fs.existsSync(LAST_WATCHED_FILE)) {
+    currentData = JSON.parse(fs.readFileSync(LAST_WATCHED_FILE, 'utf-8'));
+  }
+
+  // If the last watched item is different, update the file
+  if (!currentData.title || currentData.title !== lastWatched.title) {
+    currentData = {
+      title: lastWatched.title,
+      type: lastWatched.type,
+      ratingKey: lastWatched.ratingKey,
+      lastUpdated: new Date().toISOString(),
     };
 
-    await axios.post(discordWebhookUrl, message);
-    console.log('Discord notification sent!');
+    fs.writeFileSync(LAST_WATCHED_FILE, JSON.stringify(currentData, null, 2));  // Update the file with the new data
+    console.log('Updated last_watched.json:', currentData);
+
+    // Send a Discord notification
+    await sendDiscordNotification(currentData);
+  } else {
+    console.log('No new watch history found.');
+  }
+}
+
+async function sendDiscordNotification(data) {
+  const message = {
+    content: `New item watched: ${data.title} (${data.type})`,
+  };
+
+  try {
+    await axios.post(DISCORD_WEBHOOK_URL, message);
+    console.log('Discord notification sent.');
   } catch (error) {
     console.error('Error sending Discord notification:', error);
   }
 }
 
-// Check if there is any new watched content
-async function checkNewWatched() {
-  const recentWatched = await getRecentWatched();
-
-  if (recentWatched.length > 0) {
-    const latestItem = recentWatched[0];
-    const contentTitle = latestItem.title;
-    console.log(`New watched item: ${contentTitle}`);
-    
-    // Send notification to Discord
-    await sendDiscordNotification(contentTitle);
-  } else {
-    console.log('No new watched content.');
-  }
-}
-
-// Run the script
-checkNewWatched();
+updateLastWatched();
