@@ -18,15 +18,11 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install axios
-        run: npm install axios  # Install axios directly without package.json
+      - name: Install dependencies
+        run: npm install fs  # Install 'fs' for file system operations
 
-      - name: Run Plex Watch Script
-        run: node js/plex-watch-script.js
-        env:
-          PLEX_TOKEN: ${{ secrets.PLEX_TOKEN }}
-          PLEX_SERVER_URL: ${{ secrets.PLEX_SERVER_URL }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - name: Run Increment Counter Script
+        run: node js/increment-counter.js
 
       - name: Check for changes and commit to last_watched.json
         run: |
@@ -35,7 +31,7 @@ jobs:
           git diff --exit-code  # Checks if there are any changes to commit
           if [ $? -eq 1 ]; then
             git add last_watched.json  # Only add if there are changes
-            git commit -m "Update last watched item"
+            git commit -m "Increment last watched counter"
             git push
           else
             echo "No changes to commit"
