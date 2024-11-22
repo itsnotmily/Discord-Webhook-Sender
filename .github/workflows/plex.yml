@@ -24,17 +24,16 @@ jobs:
       - name: Run Increment Counter Script
         run: node js/increment-counter.js
 
-      - name: Check for changes and commit to last_watched.json
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          git diff --exit-code  # Checks if there are any changes to commit
-          if [ $? -eq 1 ]; then
-            git add last_watched.json  # Only add if there are changes
-            git commit -m "Increment last watched counter"
-            git push
-          else
-            echo "No changes to commit"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for commit permissions
+- name: Check for changes and commit to last_watched.json
+  run: |
+    git config --global user.name "github-actions"
+    git config --global user.email "github-actions@github.com"
+    if ! git diff --quiet; then  # Check if there are changes
+      git add last_watched.json
+      git commit -m "Increment last watched counter"
+      git push
+    else
+      echo "No changes to commit"
+    fi
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for commit permissions
