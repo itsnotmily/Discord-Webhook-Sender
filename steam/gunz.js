@@ -2,13 +2,16 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
+// Constants
 const appId = 3139440; // GunZ app ID
 const apiUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`;
 const outputFilePath = path.join(__dirname, 'last_gunz.json');
+const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL; // Discord Webhook URL from environment variable
 
+// Function to fetch GunZ status
 async function checkGunZStatus() {
   try {
-    // Fetch data from the Steam API
+    // Fetch data from Steam API
     const response = await axios.get(apiUrl);
     const appData = response.data[appId];
 
@@ -25,17 +28,52 @@ async function checkGunZStatus() {
       ? `Released or Scheduled: ${releaseDate.date}`
       : 'To Be Announced';
 
-    // Create data object to store
-    const dataToStore = {
+    const newData = {
       appId,
       name: appData.data.name,
       releaseStatus,
       lastChecked: new Date().toISOString(),
     };
 
-    // Write to last_gunz.json
-    fs.writeFileSync(outputFilePath, JSON.stringify(dataToStore, null, 2), 'utf8');
-    console.log(`Game status updated: ${JSON.stringify(dataToStore, null, 2)}`);
+    // Load existing data if it exists
+    let existingData = null;
+    if (fs.existsSync(outputFilePath)) {
+      existingData = JSON.parse(fs.readFileSync(outputFilePath, 'utf8'));
+    }
+
+    // Compare new data with existing data
+    if (!existingData || JSON.stringify(newData) !== JSON.stringify(existingData)) {
+      // Log the changes
+      console.log('Changes detected! Sending Discord notification.');
+
+      // Prepare the Discord webhook payload
+      const discordPayload = {
+        content: `🔔 **GunZ Status Updated!**`,
+        embeds: [
+          {
+            title: `GunZ: The Duel`,
+            description: `Status changed for GunZ: ${newData.releaseStatus}`,
+            fields: [
+              { name: 'Previous Status', value: existingData ? existingData.releaseStatus : 'N/A', inline: true },
+              { name: 'Current Status', value: newData.releaseStatus, inline: true },
+            ],
+            color: 0xff4500, // Orange color
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      };
+
+      // Send notification to Discord
+      await axios.post(discordWebhookUrl, discordPayload);
+
+      console.log('Discord notification sent successfully!');
+    } else {
+      console.log('No changes detected.');
+    }
+
+    // Update the JSON file with the new data
+    fs.writeFileSync(outputFilePath, JSON.stringify(newData, null, 2), 'utf8');
+    console.log('Game status updated locally.');
   } catch (error) {
     console.error('Error checking GunZ status:', error.message);
   }
