@@ -4,6 +4,7 @@ on:
   schedule:
     # Runs daily at 9:00 AM GMT
     - cron: '0 9 * * *'
+workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   gunz-check:
