@@ -27,7 +27,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add last_watched.json
+          git add ./counter/last_watched.json
           git commit -m "Increment counter"
           git push
         env:
