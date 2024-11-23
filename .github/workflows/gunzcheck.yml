@@ -27,9 +27,9 @@ jobs:
 
       # Step 4: Run GunZ Check Script
       - name: Run GunZ Status Check
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: node ./steam/gunzcheck.js
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}  # Pass the Discord webhook URL as an environment variable
 
       # Step 5: Commit and Push Changes if There Are Any
       - name: Commit and Push Changes
@@ -41,4 +41,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
