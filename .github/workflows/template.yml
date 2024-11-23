@@ -1,0 +1,43 @@
+name: Template YML
+
+on:
+  schedule:
+    # Runs daily at 9:00 AM GMT
+    - cron: '0 9 * * *'
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  gunz-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      # Step 3: Install Axios Dependency
+      - name: Install Dependencies
+        run: npm install axios
+
+      # Step 4: Run GunZ Check Script
+      - name: Run GunZ Status Check
+        run: node ./steam/YOURSCRIPT.js
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}  # Pass the Discord webhook URL as an environment variable
+
+      # Step 5: Commit and Push Changes if There Are Any
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add ./steam/last_status.json
+          git commit -m "Update GunZ status in last_status.json" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
