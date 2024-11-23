@@ -21,9 +21,9 @@ jobs:
         node-version: '18'
 
     # Step 3: Install axios (no package.json)
-    - name: Install axios
-      run: npm install axios
-
+    - name: Install Dependencies
+      run: npm install
+      working-directory: ./pokemon
     # Step 4: Run the script
     - name: Run Pokémon Notification Script
       env:
