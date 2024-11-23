@@ -6,6 +6,7 @@ const path = require('path');
 const appId = 3139440; // GunZ app ID
 const apiUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`;
 const outputFilePath = path.join(__dirname, 'last_gunz.json');
+const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL; // Discord Webhook URL from environment variable
 
 // Function to fetch GunZ status
 async function checkGunZStatus() {
@@ -51,12 +52,35 @@ async function checkGunZStatus() {
 
     // Compare new data with existing data
     if (!existingData || JSON.stringify(newData) !== JSON.stringify(existingData)) {
-      // Log the changes
+      // Log the changes in the console
       console.log('Changes detected!');
-
-      // Output the differences between the old and new data
       console.log('Previous Status:', existingData ? existingData.releaseStatus : 'N/A');
       console.log('Current Status:', newData.releaseStatus);
+
+      // Prepare the Discord webhook payload
+      const discordPayload = {
+        content: `🔔 **GunZ Status Updated!**`,
+        embeds: [
+          {
+            title: `GunZ: The Duel`,
+            description: `Status changed for GunZ: ${newData.releaseStatus}`,
+            fields: [
+              { name: 'Previous Status', value: existingData ? existingData.releaseStatus : 'N/A', inline: true },
+              { name: 'Current Status', value: newData.releaseStatus, inline: true },
+            ],
+            color: 0xff4500, // Orange color
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      };
+
+      // Send notification to Discord
+      try {
+        await axios.post(discordWebhookUrl, discordPayload);
+        console.log('Discord notification sent successfully!');
+      } catch (error) {
+        console.error('Error sending Discord notification:', error.message);
+      }
     } else {
       console.log('No changes detected.');
     }
