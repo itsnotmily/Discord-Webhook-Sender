@@ -19,7 +19,7 @@ async function getRandomPokemon() {
     const pokemonTypes = pokemon.types.map(typeInfo => typeInfo.type.name).join(', '); // Pokémon type(s)
     const pokemonHeight = (pokemon.height / 10).toFixed(1); // Convert height to meters (PokeAPI gives decimeters)
     const pokemonWeight = (pokemon.weight / 10).toFixed(1); // Convert weight to kilograms (PokeAPI gives hectograms)
-    const officialArtworkUrl = pokemon.sprites.other['dream_world'].front_default;
+    const officialArtworkUrl = pokemon.sprites.other['official-artwork'].front_default;
 
     // Create the message payload
     const discordPayload = {
