@@ -27,6 +27,8 @@ jobs:
 
       # Step 4: Run GunZ Check Script
       - name: Run GunZ Status Check
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: node ./steam/gunzcheck.js
 
       # Step 5: Commit and Push Changes if There Are Any
