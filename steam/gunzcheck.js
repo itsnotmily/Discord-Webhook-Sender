@@ -50,17 +50,20 @@ async function checkGunZStatus() {
       }
     }
 
+    // Check if the release status has changed
+    const isReleaseStatusChanged = existingData && newData.releaseStatus !== existingData.releaseStatus;
+
     // Prepare the Discord webhook payload
-    const changeStatus = existingData && JSON.stringify(newData) !== JSON.stringify(existingData) 
+    const changeStatus = isReleaseStatusChanged
       ? 'Changes detected!'
       : 'No changes detected.';
 
     const discordPayload = {
-      content: `🔔 **GunZ: The Duel Check:** ${changeStatus}`,
+      content: `🔔 **GunZ Status Check:** ${changeStatus}`,
       embeds: [
         {
           title: `GunZ: The Duel`,
-          description: `Release status of GunZ: ${newData.releaseStatus}`,
+          description: `Checks for changes to GunZ: The Duel steam page, hourly`,
           fields: [
             { name: 'Release Status', value: newData.releaseStatus, inline: true },
             { name: 'Last Checked', value: newData.lastChecked, inline: true },
@@ -71,7 +74,7 @@ async function checkGunZStatus() {
       ],
     };
 
-    // Send notification to Discord (always sends)
+    // Send notification to Discord (always sends, but only mentions "Changes detected!" if status changed)
     try {
       await axios.post(discordWebhookUrl, discordPayload);
       console.log('Discord notification sent successfully!');
@@ -79,8 +82,8 @@ async function checkGunZStatus() {
       console.error('Error sending Discord notification:', error.message);
     }
 
-    // Update the JSON file with the new data (only if there are changes)
-    if (!existingData || JSON.stringify(newData) !== JSON.stringify(existingData)) {
+    // Update the JSON file with the new data (only if release status has changed)
+    if (isReleaseStatusChanged) {
       try {
         fs.writeFileSync(outputFilePath, JSON.stringify(newData, null, 2), 'utf8');
         console.log('Game status updated locally.');
@@ -88,7 +91,7 @@ async function checkGunZStatus() {
         console.error('Error writing to file:', error.message);
       }
     } else {
-      console.log('No change in data, but notification still sent.');
+      console.log('No change in release status, but notification still sent.');
     }
 
   } catch (error) {
