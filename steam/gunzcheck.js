@@ -17,10 +17,11 @@ async function checkGunZStatus() {
     // Log the full response to see if it's valid
     console.log('Raw API Response:', response.data);
     
+    // Check if the response has valid data for the given appId
     const appData = response.data[appId];
 
-    if (!appData.success) {
-      console.error('Failed to fetch game details.');
+    if (!appData || !appData.success) {
+      console.error('Failed to fetch valid game details or app data is not successful.');
       return;
     }
 
