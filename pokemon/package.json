@@ -2,9 +2,9 @@
   "name": "pokemon-discord-notification",
   "version": "1.0.0",
   "description": "A script to fetch a random Pokémon from PokeAPI and send it to Discord via webhook.",
-  "main": "poke.js",
+  "main": "pokemon.js",
   "scripts": {
-    "start": "node poke.js"
+    "start": "node pokemon.js"
   },
   "author": "Your Name",
   "license": "MIT",
