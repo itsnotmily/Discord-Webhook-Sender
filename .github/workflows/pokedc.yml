@@ -20,7 +20,7 @@ jobs:
       with:
         node-version: '18'
 
-    # Step 3: Install axios (no package.json)
+    # Step 3: Install Dependencies (from package.json)
     - name: Install Dependencies
       run: npm install
       working-directory: ./pokemon
