@@ -50,48 +50,46 @@ async function checkGunZStatus() {
       }
     }
 
-    // Compare new data with existing data
+    // Log the status change (or no change)
+    console.log('Release Status:', newData.releaseStatus);
+
+    // Prepare the Discord webhook payload
+    const discordPayload = {
+      content: `🔔 **GunZ Status Update!**`,
+      embeds: [
+        {
+          title: `GunZ: The Duel`,
+          description: `Release status of GunZ: ${newData.releaseStatus}`,
+          fields: [
+            { name: 'Release Status', value: newData.releaseStatus, inline: true },
+            { name: 'Last Checked', value: newData.lastChecked, inline: true },
+          ],
+          color: 0xff4500, // Orange color
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+
+    // Send notification to Discord (always sends)
+    try {
+      await axios.post(discordWebhookUrl, discordPayload);
+      console.log('Discord notification sent successfully!');
+    } catch (error) {
+      console.error('Error sending Discord notification:', error.message);
+    }
+
+    // Update the JSON file with the new data (only if there are changes)
     if (!existingData || JSON.stringify(newData) !== JSON.stringify(existingData)) {
-      // Log the changes in the console
-      console.log('Changes detected!');
-      console.log('Previous Status:', existingData ? existingData.releaseStatus : 'N/A');
-      console.log('Current Status:', newData.releaseStatus);
-
-      // Prepare the Discord webhook payload
-      const discordPayload = {
-        content: `🔔 **GunZ Status Updated!**`,
-        embeds: [
-          {
-            title: `GunZ: The Duel`,
-            description: `Status changed for GunZ: ${newData.releaseStatus}`,
-            fields: [
-              { name: 'Previous Status', value: existingData ? existingData.releaseStatus : 'N/A', inline: true },
-              { name: 'Current Status', value: newData.releaseStatus, inline: true },
-            ],
-            color: 0xff4500, // Orange color
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      };
-
-      // Send notification to Discord
       try {
-        await axios.post(discordWebhookUrl, discordPayload);
-        console.log('Discord notification sent successfully!');
+        fs.writeFileSync(outputFilePath, JSON.stringify(newData, null, 2), 'utf8');
+        console.log('Game status updated locally.');
       } catch (error) {
-        console.error('Error sending Discord notification:', error.message);
+        console.error('Error writing to file:', error.message);
       }
     } else {
-      console.log('No changes detected.');
+      console.log('No change in data, but notification still sent.');
     }
 
-    // Update the JSON file with the new data
-    try {
-      fs.writeFileSync(outputFilePath, JSON.stringify(newData, null, 2), 'utf8');
-      console.log('Game status updated locally.');
-    } catch (error) {
-      console.error('Error writing to file:', error.message);
-    }
   } catch (error) {
     console.error('Error checking GunZ status:', error.message);
   }
