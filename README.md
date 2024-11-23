@@ -1,31 +1,32 @@
-# **Discord Webhook Sender**
+# **Automated Discord Webhook Messages Using API Calls**
 
-🚀 A simple Node.js project to send automated messages to Discord channels using **webhooks**. This project is perfect for daily or hourly notifications, and can be customized for various use cases such as sending Pokémon updates, reminders, logs, or any other automated content.
+🚀 A Node.js project designed to send automated messages to Discord channels via webhooks, triggered by API calls. This repo is perfect for use cases like sending Pokémon updates, reminders, logs, or any other automated content, on a daily or hourly schedule.
 
 ---
 
 ## **Features**
 
-- 📤 Sends beautifully formatted messages to Discord channels via webhooks.
-- 🕒 Supports automated triggers every day or every hour (configurable via GitHub Actions).
-- 🎨 Rich embeds with customizable content, images, and colors.
-- 🔒 Securely integrates with Discord webhooks.
-
+- 📤 Automated Webhook Messages: Sends messages to Discord channels using webhooks, triggered by API calls.
+- 🕒 Automated Scheduling: Can be configured to send notifications daily or hourly via GitHub Actions.
+- 🎨 Rich Discord Embeds: Customizable embeds with dynamic content, images, colors, and more.
+- 🔒 Secure Webhook Integration: Securely integrates with Discord webhooks, making automation easy and safe.
 ---
 
 ## **How It Works**
 
-1. **Random Pokémon Notifications**:
-   - Fetches random Pokémon data (name, number, type, height, weight, and official artwork) using the [PokeAPI](https://pokeapi.co/).
-   - Sends the Pokémon details to a Discord channel using a webhook.
-
-2. **Automation via GitHub Actions**:
+1. **Fetch Data via API:**:
+   - Makes API calls to external services (e.g., PokeAPI) to fetch dynamic content like Pokémon details, logs, or updates.
+   - Formats the data into beautifully structured Discord messages using embeds.
+2. **Send to Discord:**
+   - Sends the formatted messages to a Discord channel using a webhook URL.
+   - Messages can include rich content, including text, images, and embedded fields. 
+3. **Automation via GitHub Actions**:
    - Configured to run daily or hourly based on the project.
    - Automates message delivery without manual intervention.
 
 ---
 
-## **Setup Instructions**
+## **Setup Instructions (Pokemon example)**
 
 ### Prerequisites
 - Node.js installed on your system.
