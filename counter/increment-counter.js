@@ -1,28 +1,9 @@
-const axios = require('axios');
+const fs = require('fs');
 
-const PLEX_SERVER_URL = "http://<YOUR_SERVER_URL>:32400"; // Replace with your server URL
-const PLEX_TOKEN = "<YOUR_PLEX_TOKEN>"; // Replace with your token
+const filePath = './counter/last_watched.json';
+const data = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : { count: 0 };
 
-async function getLatestWatched() {
-  try {
-    const response = await axios.get(`${PLEX_SERVER_URL}/status/sessions/history/all`, {
-      params: { 'X-Plex-Token': PLEX_TOKEN }
-    });
+data.count = (data.count || 0) + 1;
 
-    const history = response.data.MediaContainer.Metadata;
-
-    if (history && history.length > 0) {
-      // Sort by view date (descending)
-      history.sort((a, b) => b.lastViewedAt - a.lastViewedAt);
-
-      const latest = history[0];
-      console.log(`Latest Watched: ${latest.title}`);
-    } else {
-      console.log('No watch history found.');
-    }
-  } catch (error) {
-    console.error('Error fetching watch history:', error.message);
-  }
-}
-
-getLatestWatched();
+fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+console.log('Updated count to:', data.count);
