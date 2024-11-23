@@ -35,7 +35,8 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add ./steam/last_gunz.json
-          git commit -m "Update GunZ status in last_gunz.json"
+          git commit -m "Update GunZ status in last_gunz.json" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
