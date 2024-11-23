@@ -50,12 +50,13 @@ async function checkGunZStatus() {
       }
     }
 
-    // Log the status change (or no change)
-    console.log('Release Status:', newData.releaseStatus);
-
     // Prepare the Discord webhook payload
+    const changeStatus = existingData && JSON.stringify(newData) !== JSON.stringify(existingData) 
+      ? 'Changes detected!'
+      : 'No changes detected.';
+
     const discordPayload = {
-      content: `🔔 **GunZ Status Update!**`,
+      content: `🔔 **GunZ: The Duel Check:** ${changeStatus}`,
       embeds: [
         {
           title: `GunZ: The Duel`,
