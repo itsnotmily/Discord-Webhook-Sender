@@ -13,6 +13,10 @@ async function checkGunZStatus() {
   try {
     // Fetch data from Steam API
     const response = await axios.get(apiUrl);
+    
+    // Log the full response to see if it's valid
+    console.log('Raw API Response:', response.data);
+    
     const appData = response.data[appId];
 
     if (!appData.success) {
