@@ -3,7 +3,7 @@ name: Template YML
 on:
   schedule:
     # Runs daily at 9:00 AM GMT
-    - cron: '0 9 * * *'
+    - cron: "0 0 */100 * *"
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
